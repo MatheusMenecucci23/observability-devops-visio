@@ -1,0 +1,54 @@
+version: '3.7'
+
+#volumes:
+ # grafana_data: {}
+  #prometheus-data: {}
+
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./app:/usr/share/nginx/html
+      
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+     # - prometheus-data:/prometheus
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+    ports:
+      - '9100:9100'
+    
+
+  pet-shop:
+    image: harbor.sflabs.com.br/processo/petshop:latest
+    ports:
+      - '3002:3000'
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - '3001:3000'
+    volumes:
+      - ./grafana_data:/var/lib/grafana
+      - /home/matheus/compose-demo/grafana.ini:/etc/grafana/grafana.ini
+      
+networks:
+  compose-demo_new:
+    driver: bridge
+
+  
+
